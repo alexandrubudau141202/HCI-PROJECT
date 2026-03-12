@@ -1,5 +1,5 @@
 package com.hci.anime.model;
 
-public class Recommendations {
+public class CharacterAnime {
     
 }

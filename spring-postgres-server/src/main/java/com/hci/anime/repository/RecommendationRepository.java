@@ -1,5 +1,5 @@
 package com.hci.anime.repository;
 
-public class AnimeRepository {
+public class RecommendationRepository {
     
 }

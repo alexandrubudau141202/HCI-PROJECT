@@ -1,5 +1,5 @@
 package com.hci.anime.controller;
 
-public class UserController {
+public class RecommendationController {
     
 }
