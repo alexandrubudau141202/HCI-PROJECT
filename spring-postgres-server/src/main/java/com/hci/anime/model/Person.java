@@ -39,6 +39,9 @@ public class Person {
     @Column(name = "favorites")
     private Integer favorites;
 
+    @Column(name = "image_url")
+    private String imageUrl;
+
     @OneToMany(mappedBy = "person", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonIgnore
     private Set<PersonAlternateName> alternateNames;

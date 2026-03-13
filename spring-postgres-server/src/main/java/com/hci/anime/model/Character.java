@@ -29,6 +29,9 @@ public class Character {
     @Column(name = "favorites")
     private Integer favorites;
 
+    @Column(name = "image_url")
+    private String imageUrl;
+
     @OneToMany(mappedBy = "character", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonIgnore
     private Set<CharacterNickname> nicknames;

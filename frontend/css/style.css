@@ -1,0 +1,33 @@
+body {
+    background-color: #f8f9fa;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+}
+
+.anime-card {
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    border: 1px solid #e9ecef;
+}
+
+.anime-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.1) !important;
+}
+
+.anime-thumb {
+    width: 100%;
+    aspect-ratio: 3/4;
+    object-fit: cover;
+}
+
+.hero {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+.navbar-brand {
+    font-size: 1.3rem;
+    letter-spacing: -0.5px;
+}
+
+.badge {
+    font-weight: 500;
+}

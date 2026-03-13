@@ -76,6 +76,9 @@ public class Anime {
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
+    @Column(name = "image_url")
+    private String imageUrl;
+
     @OneToOne(mappedBy = "anime", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonIgnoreProperties({"anime", "hibernateLazyInitializer", "handler"})
     private AnimeStats stats;

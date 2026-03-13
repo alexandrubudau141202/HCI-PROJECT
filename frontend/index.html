@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>AniBase</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm">
+    <div class="container">
+        <a class="navbar-brand fw-bold" href="/index.html">🎌 AniBase</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="nav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item"><a class="nav-link" href="/pages/anime.html">Anime</a></li>
+                <li class="nav-item"><a class="nav-link" href="/pages/characters.html">Characters</a></li>
+                <li class="nav-item"><a class="nav-link" href="/pages/people.html">People</a></li>
+                <li class="nav-item"><a class="nav-link" href="/pages/users.html">Users</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<!-- Hero -->
+<div class="hero bg-light border-bottom py-5">
+    <div class="container text-center">
+        <h1 class="fw-bold mb-2">Discover Anime</h1>
+        <p class="text-muted mb-4">Browse 28,000+ anime series, movies and OVAs</p>
+        <form id="searchForm" class="row g-2 justify-content-center">
+            <div class="col-md-6">
+                <input type="text" id="searchInput" class="form-control form-control-lg"
+                       placeholder="Search anime, e.g. Naruto...">
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-dark btn-lg">Search</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Top Anime -->
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4 class="fw-bold mb-0">Top Anime by Score</h4>
+        <a href="/pages/anime.html" class="text-muted small">View all →</a>
+    </div>
+    <div id="topAnimeGrid" class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-6 g-3">
+        <div class="text-center py-4 col-12"><div class="spinner-border text-secondary"></div></div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/js/api.js"></script>
+<script src="/js/main.js"></script>
+<script>
+    // Search
+    document.getElementById('searchForm').addEventListener('submit', e => {
+        e.preventDefault();
+        const q = document.getElementById('searchInput').value.trim();
+        if (q) window.location.href = `/pages/anime.html?q=${encodeURIComponent(q)}`;
+    });
+
+    // Top anime
+    api.getTopByScore(0, 12).then(data => {
+        const items = data.content || data;
+        document.getElementById('topAnimeGrid').innerHTML = items.map(animeCard).join('');
+    }).catch(() => showError('topAnimeGrid', 'Failed to load anime'));
+</script>
+</body>
+</html>

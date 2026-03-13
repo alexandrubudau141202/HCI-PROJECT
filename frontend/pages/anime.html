@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Anime — AniBase</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<nav class="navbar navbar-light bg-white border-bottom shadow-sm">
+    <div class="container">
+        <a class="navbar-brand fw-bold" href="/index.html">🎌 AniBase</a>
+        <div class="d-flex gap-3">
+            <a class="nav-link" href="/pages/anime.html">Anime</a>
+            <a class="nav-link" href="/pages/characters.html">Characters</a>
+            <a class="nav-link" href="/pages/people.html">People</a>
+            <a class="nav-link" href="/pages/users.html">Users</a>
+        </div>
+    </div>
+</nav>
+
+<div class="container py-4">
+    <div class="row g-3 mb-4">
+        <div class="col-md-5">
+            <input type="text" id="searchInput" class="form-control" placeholder="Search anime...">
+        </div>
+        <div class="col-md-2">
+            <select id="typeFilter" class="form-select">
+                <option value="">All Types</option>
+                <option>TV</option><option>Movie</option><option>OVA</option>
+                <option>ONA</option><option>Special</option><option>Music</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <select id="sortFilter" class="form-select">
+                <option value="score">Top Score</option>
+                <option value="popularity">Top Popularity</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <input type="number" id="yearFilter" class="form-control" placeholder="Year e.g. 2020">
+        </div>
+        <div class="col-md-1">
+            <button id="searchBtn" class="btn btn-dark w-100">Go</button>
+        </div>
+    </div>
+
+    <div id="resultsGrid" class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-6 g-3"></div>
+    <div id="pagination" class="mt-4"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/js/api.js"></script>
+<script src="/js/main.js"></script>
+<script>
+    let currentPage = 0;
+    const PAGE_SIZE = 24;
+
+    async function load(page = 0) {
+        currentPage = page;
+        showLoading('resultsGrid');
+        const q    = document.getElementById('searchInput').value.trim();
+        const type = document.getElementById('typeFilter').value;
+        const sort = document.getElementById('sortFilter').value;
+        const year = document.getElementById('yearFilter').value;
+
+        try {
+            let data;
+            if (q)    data = await api.searchAnime(q, page, PAGE_SIZE);
+            else if (year) data = await api.getByYear(year, page, PAGE_SIZE);
+            else if (type) data = await api.getByType(type, page, PAGE_SIZE);
+            else if (sort === 'popularity') data = await api.getTopByPopularity(page, PAGE_SIZE);
+            else data = await api.getTopByScore(page, PAGE_SIZE);
+
+            const items = data.content || [];
+            const total = data.page?.totalPages || data.totalPages || 1;
+            document.getElementById('resultsGrid').innerHTML = items.map(animeCard).join('');
+            renderPagination('pagination', currentPage, total, load);
+        } catch(e) {
+            showError('resultsGrid', 'Failed to load anime');
+        }
+    }
+
+    document.getElementById('searchBtn').addEventListener('click', () => load(0));
+    document.getElementById('searchInput').addEventListener('keydown', e => { if (e.key === 'Enter') load(0); });
+
+    // Handle incoming search query from homepage
+    const q = getParam('q');
+    if (q) document.getElementById('searchInput').value = q;
+    load(0);
+</script>
+</body>
+</html>
