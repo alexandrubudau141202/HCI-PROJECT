@@ -1,0 +1,82 @@
+<nav class="navbar navbar-expand-lg">
+    <div class="container">
+        <a class="navbar-brand" href="/">ANI<span>BASE</span></a>
+        <div class="d-flex gap-3">
+            <a class="nav-link" href="/anime">Anime</a>
+            <a class="nav-link" href="/characters">Characters</a>
+            <a class="nav-link" href="/people">People</a>
+            <a class="nav-link" href="/users">Users</a>
+        </div>
+    </div>
+</nav>
+
+<div class="container py-4">
+    <div id="content"><div class="text-center py-5"><div class="spinner-border"></div></div></div>
+</div>
+
+<script>
+    const id = window.location.pathname.split('/').pop();
+    if (!id) window.location.href = '/anime';
+
+    Promise.all([
+        api.getAnimeById(id),
+        api.getRatingStats(id),
+        api.getCharactersByAnime(id, 0, 10),
+        api.getRecommendations(id)
+    ]).then(([anime, ratings, chars, recs]) => {
+        const genres  = (anime.genres||[]).map(g => `<span class="badge bg-light text-dark border me-1">${g.name}</span>`).join('');
+        const themes  = (anime.themes||[]).map(t => `<span class="badge bg-light text-dark border me-1">${t.name}</span>`).join('');
+        const studios = (anime.organisations||[]).filter(o=>o.orgType==='studio').map(o=>o.name).join(', ');
+
+        document.getElementById('content').innerHTML = `
+            <div class="row g-4">
+                <div class="col-md-3 text-center">
+                    <img src="${anime.imageUrl||'https://via.placeholder.com/225x320'}" class="img-fluid rounded shadow" alt="${anime.title}">
+                    <div class="mt-3">
+                        <div class="display-6 fw-bold text-${scoreColor(anime.score)}">${anime.score||'N/A'}</div>
+                        <small class="text-muted">${(anime.scoredBy||0).toLocaleString()} votes</small>
+                    </div>
+                    <div class="mt-3 text-start small">
+                        <p class="mb-1"><strong>Type:</strong> ${anime.type||'—'}</p>
+                        <p class="mb-1"><strong>Episodes:</strong> ${anime.episodes||'—'}</p>
+                        <p class="mb-1"><strong>Status:</strong> ${anime.status||'—'}</p>
+                        <p class="mb-1"><strong>Season:</strong> ${anime.season||'—'} ${anime.year||''}</p>
+                        <p class="mb-1"><strong>Source:</strong> ${anime.source||'—'}</p>
+                        <p class="mb-1"><strong>Studio:</strong> ${studios||'—'}</p>
+                        <p class="mb-1"><strong>Rating:</strong> ${anime.rating||'—'}</p>
+                        <p class="mb-1"><strong>Rank:</strong> #${anime.rank||'—'}</p>
+                        <p class="mb-1"><strong>Popularity:</strong> #${anime.popularity||'—'}</p>
+                        <p class="mb-1"><strong>Members:</strong> ${(anime.members||0).toLocaleString()}</p>
+                    </div>
+                </div>
+                <div class="col-md-9">
+                    <h2 class="fw-bold">${anime.title}</h2>
+                    <p class="text-muted">${anime.titleJapanese||''}</p>
+                    <div class="mb-2">${genres}${themes}</div>
+                    <p class="text-secondary mt-3">${anime.synopsis||'No synopsis available.'}</p>
+                    ${ratings.totalRatings ? `
+                    <div class="stats-card mb-4">
+                        <h6 class="fw-bold mb-2">User Ratings</h6>
+                        <span class="stat-num text-success">${ratings.avgScore?.toFixed(2)||'N/A'}</span>
+                        <small class="text-muted ms-2">avg from ${ratings.totalRatings.toLocaleString()} ratings</small>
+                    </div>` : ''}
+                    ${anime.stats ? `
+                    <div class="stats-card mb-4">
+                        <h6 class="fw-bold mb-3">Watchlist Stats</h6>
+                        <div class="row row-cols-3 g-2 text-center">
+                            <div><div class="stat-num">${(anime.stats.completed||0).toLocaleString()}</div><div class="stat-label">Completed</div></div>
+                            <div><div class="stat-num">${(anime.stats.watching||0).toLocaleString()}</div><div class="stat-label">Watching</div></div>
+                            <div><div class="stat-num">${(anime.stats.planToWatch||0).toLocaleString()}</div><div class="stat-label">Plan to Watch</div></div>
+                            <div><div class="stat-num">${(anime.stats.dropped||0).toLocaleString()}</div><div class="stat-label">Dropped</div></div>
+                            <div><div class="stat-num">${(anime.stats.onHold||0).toLocaleString()}</div><div class="stat-label">On Hold</div></div>
+                        </div>
+                    </div>` : ''}
+                    ${chars.content?.length ? `
+                    <h5 class="fw-bold mt-3 mb-2">Characters</h5>
+                    <div class="row row-cols-3 row-cols-md-5 g-2 mb-4">
+                        ${chars.content.map(characterCard).join('')}
+                    </div>` : ''}
+                </div>
+            </div>`;
+    }).catch(e => showError('content', 'Failed to load anime details'));
+</script>

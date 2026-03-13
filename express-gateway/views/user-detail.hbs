@@ -1,0 +1,79 @@
+<nav class="navbar navbar-expand-lg">
+    <div class="container">
+        <a class="navbar-brand" href="/">ANI<span>BASE</span></a>
+        <div class="d-flex gap-3">
+            <a class="nav-link" href="/anime">Anime</a>
+            <a class="nav-link" href="/characters">Characters</a>
+            <a class="nav-link" href="/people">People</a>
+            <a class="nav-link" href="/users">Users</a>
+        </div>
+    </div>
+</nav>
+
+<div class="container py-4">
+    <div id="content"><div class="text-center py-5"><div class="spinner-border"></div></div></div>
+</div>
+
+<script>
+    const username = window.location.pathname.split('/').pop();
+    if (!username) window.location.href = '/users';
+
+    Promise.all([
+        api.getUserByUsername(username),
+        api.getUserRatings(username, 0, 10),
+        api.getUserFavs(username)
+    ]).then(([user, ratings, favs]) => {
+        const animeFavs = favs.filter(f => f.fav_type === 'anime');
+        const charFavs  = favs.filter(f => f.fav_type === 'character');
+
+        const ratingsTable = ratings.data?.length ? `
+            <h5 class="fw-bold mt-4 mb-2">Recent Ratings</h5>
+            <table class="table table-sm table-hover">
+                <thead class="table-light"><tr><th>Anime ID</th><th>Status</th><th>Score</th><th>Episodes Watched</th></tr></thead>
+                <tbody>${ratings.data.map(r => `
+                    <tr onclick="window.location='/anime/${r.anime_id}'" style="cursor:pointer">
+                        <td><a href="/anime/${r.anime_id}">${r.anime_id}</a></td>
+                        <td>${r.status||'—'}</td>
+                        <td>${r.score||'—'}</td>
+                        <td>${r.num_watched_episodes||'—'}</td>
+                    </tr>`).join('')}
+                </tbody>
+            </table>` : '';
+
+        document.getElementById('content').innerHTML = `
+            <div class="row g-4">
+                <div class="col-md-3">
+                    <div class="user-profile-card">
+                        <div class="display-1 mb-2">👤</div>
+                        <h4 class="fw-bold">${user.username}</h4>
+                        <p class="text-muted mb-1">${user.gender||'—'}</p>
+                        <p class="text-muted mb-1">📍 ${user.location||'—'}</p>
+                        <p class="text-muted mb-0">Joined: ${user.joined||'—'}</p>
+                    </div>
+                </div>
+                <div class="col-md-9">
+                    <div class="row g-3 mb-3">
+                        <div class="col-auto">
+                            <div class="stats-card text-center">
+                                <div class="stat-num">${animeFavs.length}</div>
+                                <div class="stat-label">Anime Favs</div>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <div class="stats-card text-center">
+                                <div class="stat-num">${charFavs.length}</div>
+                                <div class="stat-label">Character Favs</div>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <div class="stats-card text-center">
+                                <div class="stat-num">${ratings.total||0}</div>
+                                <div class="stat-label">Total Ratings</div>
+                            </div>
+                        </div>
+                    </div>
+                    ${ratingsTable}
+                </div>
+            </div>`;
+    }).catch(() => showError('content', 'Failed to load user'));
+</script>

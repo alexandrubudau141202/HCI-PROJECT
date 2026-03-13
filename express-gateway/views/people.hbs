@@ -1,0 +1,66 @@
+<nav class="navbar navbar-expand-lg">
+    <div class="container">
+        <a class="navbar-brand" href="/">ANI<span>BASE</span></a>
+        <div class="d-flex gap-3">
+            <a class="nav-link" href="/anime">Anime</a>
+            <a class="nav-link" href="/characters">Characters</a>
+            <a class="nav-link" href="/people">People</a>
+            <a class="nav-link" href="/users">Users</a>
+        </div>
+    </div>
+</nav>
+
+<div class="container py-4">
+    <div class="row g-2 mb-4">
+        <div class="col-md-6">
+            <input type="text" id="searchInput" class="form-control" placeholder="Search voice actors, directors...">
+        </div>
+        <div class="col-auto">
+            <button id="searchBtn" class="btn btn-dark">Search</button>
+        </div>
+    </div>
+    <div id="resultsGrid" class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-6 g-3"></div>
+    <div id="pagination" class="mt-4"></div>
+</div>
+
+<script>
+    let currentPage = 0;
+    const PAGE_SIZE = 24;
+
+    function personCard(p) {
+        const img = p.imageUrl || 'https://via.placeholder.com/80x110?text=?';
+        return `
+            <div class="col">
+                <a href="/people/${p.personMalId}" class="text-decoration-none text-dark">
+                    <div class="card h-100 shadow-sm anime-card">
+                        <img src="${img}" class="card-img-top anime-thumb" alt="${p.name}" onerror="this.src='https://via.placeholder.com/80x110?text=?'">
+                        <div class="card-body p-2">
+                            <p class="small fw-semibold mb-0 text-truncate">${p.name}</p>
+                            <p class="small text-muted mb-0">♥ ${(p.favorites||0).toLocaleString()}</p>
+                        </div>
+                    </div>
+                </a>
+            </div>`;
+    }
+
+    async function load(page = 0) {
+        currentPage = page;
+        showLoading('resultsGrid');
+        const q = document.getElementById('searchInput').value.trim();
+        try {
+            const data = q
+                ? await api.searchPeople(q, page, PAGE_SIZE)
+                : await api.getTopPeople(page, PAGE_SIZE);
+            const items = data.content || [];
+            const total = data.page?.totalPages || data.totalPages || 1;
+            document.getElementById('resultsGrid').innerHTML = items.map(personCard).join('');
+            renderPagination('pagination', currentPage, total, load);
+        } catch(e) {
+            showError('resultsGrid', 'Failed to load people');
+        }
+    }
+
+    document.getElementById('searchBtn').addEventListener('click', () => load(0));
+    document.getElementById('searchInput').addEventListener('keydown', e => { if (e.key === 'Enter') load(0); });
+    load(0);
+</script>
